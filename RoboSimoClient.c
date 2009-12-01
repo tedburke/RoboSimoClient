@@ -21,9 +21,8 @@ union portc_union portc;
 union portd_union portd;
 unsigned char analog_inputs[8];
 
-unsigned char ADRESH; // analog-digital conversion result register
-unsigned char CCPR1L; // PWM channel 1 duty cycle register
-unsigned char CCPR2L; // PWM channel 1 duty cycle register
+unsigned char CCPR1L = 255; // PWM channel 1 duty cycle register
+unsigned char CCPR2L = 255; // PWM channel 1 duty cycle register
 
 // Analog input function
 unsigned int read_analog_channel(unsigned int channel)
@@ -91,7 +90,6 @@ LPDWORD lpThreadId = NULL;
 HANDLE hNetworkThread = NULL;
 
 // Network thread function
-#define DEFAULT_BUFLEN 512
 #define DEFAULT_PORT "4009"
 
 char server_address[16];
@@ -102,10 +100,9 @@ DWORD WINAPI network_thread_function(LPVOID lpParam)
 	WSADATA wsaData;
     SOCKET ConnectSocket = INVALID_SOCKET;
     struct addrinfo *result = NULL, *ptr = NULL, hints;
-    char *sendbuf = "f"; //"this is a test";
-    char recvbuf[DEFAULT_BUFLEN];
+    unsigned char sendbuf[6];
+    unsigned char recvbuf[12];
     int iResult;
-    int recvbuflen = DEFAULT_BUFLEN;
 	
     // Initialize Winsock
     iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
@@ -164,6 +161,7 @@ DWORD WINAPI network_thread_function(LPVOID lpParam)
 
 	while(stay_connected)
 	{
+		printf("%d %d %d\n", LATD, CCPR1L, CCPR2L);
 		// Send robot state
 		sendbuf[0] = LATA;
 		sendbuf[1] = LATB;
@@ -171,8 +169,7 @@ DWORD WINAPI network_thread_function(LPVOID lpParam)
 		sendbuf[3] = LATD;
 		sendbuf[4] = CCPR1L;
 		sendbuf[5] = CCPR2L;
-		sendbuf[6] = ADRESH;
-		iResult = send(ConnectSocket, sendbuf, 7, 0);
+		iResult = send(ConnectSocket, sendbuf, 6, 0);
 		if (iResult == SOCKET_ERROR)
 		{
 			printf("send failed: %d\n", WSAGetLastError());
@@ -180,20 +177,16 @@ DWORD WINAPI network_thread_function(LPVOID lpParam)
 			WSACleanup();
 			return 1;
 		}
-		printf("Sent %d bytes\n", iResult);
-
+		//printf("Sent %d bytes\n", iResult);
+		
 		// Receive sensor readings
-		iResult = recv(ConnectSocket, recvbuf, recvbuflen, 0);
-		if (iResult > 0)
-		{
-			printf("Bytes received: %d\n", iResult);
-		}
-		else
+		iResult = recv(ConnectSocket, recvbuf, 12, 0);
+		if (iResult <= 0)
 		{
 			printf("Connection closed\n");
 			break;
-		}		
-		printf("Received %d bytes", iResult);
+		}
+		//printf("Received %d bytes", iResult);
 		PORTA = recvbuf[0];
 		PORTB = recvbuf[1];
 		PORTC = recvbuf[2];
@@ -208,15 +201,6 @@ DWORD WINAPI network_thread_function(LPVOID lpParam)
 		analog_inputs[7] = recvbuf[11];
 	}
 	
-	// shutdown the connection since no more data will be sent
-	/*iResult = shutdown(ConnectSocket, SD_SEND);
-	if (iResult == SOCKET_ERROR) {
-		printf("shutdown failed: %d\n", WSAGetLastError());
-		closesocket(ConnectSocket);
-		WSACleanup();
-		return 1;
-	}*/
-
     // Exit thread
     closesocket(ConnectSocket);
     WSACleanup();
@@ -226,7 +210,7 @@ DWORD WINAPI network_thread_function(LPVOID lpParam)
 int connect_to_server(int a, int b, int c, int d, int port)
 {
 	// Specify global server properties before launching network thread
-	sprintf(server_address, "%d.%d.%d.%d\0", a, b, c, d);
+	sprintf(server_address, "%d.%d.%d.%d", a, b, c, d);
 	sprintf(server_port, "%d", port);
 	stay_connected = 1; // Will be reset to 0 when thread should exit
 	hNetworkThread = CreateThread(NULL, 0, network_thread_function, NULL, 0, lpThreadId);

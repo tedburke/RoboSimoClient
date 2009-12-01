@@ -165,9 +165,8 @@ extern unsigned char analog_inputs[8];
 extern unsigned int read_analog_channel(unsigned int channel);
 
 // Other registers
-extern unsigned char ADRESH; // analog-digital conversion result register
 extern unsigned char CCPR1L; // PWM channel 1 duty cycle register
-extern unsigned char CCPR2L; // PWM channel 1 duty cycle register
+extern unsigned char CCPR2L; // PWM channel 2 duty cycle register
 
 // Robot control functions
 extern void set_motor_directions(int left, int right);

@@ -17,28 +17,18 @@ int main()
 	// Main loop
 	while(1)
 	{
+		// Set motor speeds
+		set_motor_speeds(100, 100); // max speed is 255
+		
 		// Move around
-		set_motor_directions(1, 1);
+		set_motor_directions(1, 1); // forwards
 		delay_ms(1000);
-		set_motor_directions(-1, -1);
+		set_motor_directions(-1, -1); // backwards
 		delay_ms(1000);
-		set_motor_directions(1, -1);
+		set_motor_directions(1, -1); // turn right
 		delay_ms(1000);
-		set_motor_directions(-1, 1);
+		set_motor_directions(-1, 1); // turn left
 		delay_ms(1000);
-
-		/*printf("DIs %u %u %u %u ",
-			PORTA, PORTB, PORTC, PORTD);
-		printf("AIs %u %u %u %u %u %u %u %u\n",
-			analog_inputs[0],
-			analog_inputs[1],
-			analog_inputs[2],
-			analog_inputs[3],
-			analog_inputs[4],
-			analog_inputs[5],
-			analog_inputs[6],
-			analog_inputs[7]);
-		delay_ms(500);*/
 	}
 	
 	close_connection();
