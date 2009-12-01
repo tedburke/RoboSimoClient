@@ -22,7 +22,7 @@ union portd_union portd;
 unsigned char analog_inputs[8];
 
 unsigned char CCPR1L = 255; // PWM channel 1 duty cycle register
-unsigned char CCPR2L = 255; // PWM channel 1 duty cycle register
+unsigned char CCPR2L = 255; // PWM channel 2 duty cycle register
 
 // Analog input function
 unsigned int read_analog_channel(unsigned int channel)
@@ -89,75 +89,74 @@ int stay_connected = 0;
 LPDWORD lpThreadId = NULL;
 HANDLE hNetworkThread = NULL;
 
-// Network thread function
-#define DEFAULT_PORT "4009"
-
+// Server address strings
 char server_address[16];
 char server_port[10];
 
+// Network thread function
 DWORD WINAPI network_thread_function(LPVOID lpParam)
 {
 	WSADATA wsaData;
-    SOCKET ConnectSocket = INVALID_SOCKET;
-    struct addrinfo *result = NULL, *ptr = NULL, hints;
-    unsigned char sendbuf[6];
-    unsigned char recvbuf[12];
-    int iResult;
+	SOCKET ConnectSocket = INVALID_SOCKET;
+	struct addrinfo *result = NULL, *ptr = NULL, hints;
+	unsigned char sendbuf[6];
+	unsigned char recvbuf[12];
+	int iResult;
 	
-    // Initialize Winsock
-    iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
-    if (iResult != 0)
+	// Initialize Winsock
+	iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
+	if (iResult != 0)
 	{
-        printf("WSAStartup failed: %d\n", iResult);
-        return 1;
-    }
+		printf("WSAStartup failed: %d\n", iResult);
+		return 1;
+	}
 
-    ZeroMemory( &hints, sizeof(hints) );
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_protocol = IPPROTO_TCP;
+	ZeroMemory( &hints, sizeof(hints) );
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_protocol = IPPROTO_TCP;
 
-    // Resolve the server address and port
-    iResult = getaddrinfo(server_address, server_port, &hints, &result);
-    if ( iResult != 0 )
+	// Resolve the server address and port
+	iResult = getaddrinfo(server_address, server_port, &hints, &result);
+	if (iResult != 0)
 	{
-        printf("getaddrinfo failed: %d\n", iResult);
-        WSACleanup();
-        return 1;
-    }
+		printf("getaddrinfo failed: %d\n", iResult);
+		WSACleanup();
+		return 1;
+	}
 
 	// Attempt to connect to an address until one succeeds
-    for(ptr=result; ptr != NULL ;ptr=ptr->ai_next)
+	for(ptr=result ; ptr != NULL ; ptr=ptr->ai_next)
 	{
-        // Create a SOCKET for connecting to server
-        ConnectSocket = socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
-        if (ConnectSocket == INVALID_SOCKET)
+		// Create a SOCKET for connecting to server
+		ConnectSocket = socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
+		if (ConnectSocket == INVALID_SOCKET)
 		{
-            printf("Error at socket(): %ld\n", WSAGetLastError());
-            freeaddrinfo(result);
-            WSACleanup();
-            return 1;
-        }
+			printf("Error at socket(): %ld\n", WSAGetLastError());
+			freeaddrinfo(result);
+			WSACleanup();
+			return 1;
+		}
 
-        // Connect to server.
-        iResult = connect( ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
-        if (iResult == SOCKET_ERROR)
+		// Connect to server.
+		iResult = connect( ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
+		if (iResult == SOCKET_ERROR)
 		{
-            closesocket(ConnectSocket);
-            ConnectSocket = INVALID_SOCKET;
-            continue;
-        }
-        break;
-    }
+			closesocket(ConnectSocket);
+			ConnectSocket = INVALID_SOCKET;
+			continue;
+		}
+		break;
+	}
 
-    freeaddrinfo(result);
+	freeaddrinfo(result);
 
-    if (ConnectSocket == INVALID_SOCKET) {
-        printf("Unable to connect to server!\n");
-        WSACleanup();
+	if (ConnectSocket == INVALID_SOCKET) {
+		printf("Unable to connect to server!\n");
+		WSACleanup();
 		exit(1);
-        return 1;
-    }
+		return 1;
+	}
 
 	while(stay_connected)
 	{
@@ -201,9 +200,9 @@ DWORD WINAPI network_thread_function(LPVOID lpParam)
 		analog_inputs[7] = recvbuf[11];
 	}
 	
-    // Exit thread
-    closesocket(ConnectSocket);
-    WSACleanup();
+	// Exit thread
+	closesocket(ConnectSocket);
+	WSACleanup();
 	printf("Network thread exiting\n");
 }
 
