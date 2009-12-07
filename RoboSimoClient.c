@@ -160,7 +160,6 @@ DWORD WINAPI network_thread_function(LPVOID lpParam)
 
 	while(stay_connected)
 	{
-		printf("%d %d %d\n", LATD, CCPR1L, CCPR2L);
 		// Send robot state
 		sendbuf[0] = LATA;
 		sendbuf[1] = LATB;
@@ -176,16 +175,15 @@ DWORD WINAPI network_thread_function(LPVOID lpParam)
 			WSACleanup();
 			return 1;
 		}
-		//printf("Sent %d bytes\n", iResult);
 		
 		// Receive sensor readings
 		iResult = recv(ConnectSocket, recvbuf, 12, 0);
 		if (iResult <= 0)
 		{
 			printf("Connection closed\n");
+			exit(1);
 			break;
 		}
-		//printf("Received %d bytes", iResult);
 		PORTA = recvbuf[0];
 		PORTB = recvbuf[1];
 		PORTC = recvbuf[2];
@@ -203,7 +201,6 @@ DWORD WINAPI network_thread_function(LPVOID lpParam)
 	// Exit thread
 	closesocket(ConnectSocket);
 	WSACleanup();
-	printf("Network thread exiting\n");
 }
 
 int connect_to_server(int a, int b, int c, int d, int port)

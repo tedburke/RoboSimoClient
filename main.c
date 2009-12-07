@@ -1,7 +1,8 @@
-// main.c - RoboSimoClient example program - written by Ted Burke - last updated 1-12-2009
+//
+// main.c - RoboSimoClient example program - written by Ted Burke - last updated 7-12-2009
+//
 
 #include <stdio.h>
-
 #include "RoboSimoClient.h"
 
 int main()
@@ -21,17 +22,26 @@ int main()
 	while(1)
 	{
 		// Set motor speeds
-		set_motor_speeds(50, 50); // max speed is 255
+		set_motor_speeds(100, 100); // max speed is 255
 		
-		// Move around
-		set_motor_directions(1, 1); // forwards
-		delay_ms(1000);
-		set_motor_directions(-1, -1); // backwards
-		delay_ms(1000);
-		set_motor_directions(1, -1); // turn right
-		delay_ms(1000);
-		set_motor_directions(-1, 1); // turn left
-		delay_ms(1000);
+		// Go forwards to white line, pause, then reverse forever		
+		while(read_analog_channel(0) < 120 && read_analog_channel(1) < 120)
+		{
+			set_motor_directions(1, 1); // motors forwards
+		}
+		set_motor_directions(0, 0); // stop motors
+
+		// pause
+		delay_ms(2000);
+		
+		// reverse full speed
+		set_motor_speeds(255, 255); // max speed is 255
+		set_motor_directions(-1, -1); // reverse
+		
+		// program gets trapped in this loop forever
+		while(1)
+		{
+		}
 	}
 	
 	return 0;
