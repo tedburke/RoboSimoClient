@@ -196,6 +196,9 @@ DWORD WINAPI network_thread_function(LPVOID lpParam)
 		analog_inputs[5] = recvbuf[9];
 		analog_inputs[6] = recvbuf[10];
 		analog_inputs[7] = recvbuf[11];
+		
+		// Short pause
+		Sleep(20);
 	}
 	
 	// Exit thread
