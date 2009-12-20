@@ -1,5 +1,5 @@
 //
-// main.c - RoboSimoClient example program - written by Ted Burke - last updated 7-12-2009
+// main.c - RoboSimoClient example program - written by Ted Burke - last updated 20-12-2009
 //
 
 #include <stdio.h>
@@ -15,33 +15,29 @@ int main()
 	printf("Please enter server IP address: ");
 	scanf("%d.%d.%d.%d", &a, &b, &c, &d);
 	printf("Please enter port number: ");
-	scanf("%d", &port);	
+	scanf("%d", &port);
 	connect_to_server(a, b, c, d, port);
+	//connect_to_server(192, 168, 1, 2, 4009);
 
 	// Main loop
+	set_motor_speeds(255, 255); // max speed is 255
 	while(1)
-	{
-		// Set motor speeds
-		set_motor_speeds(100, 100); // max speed is 255
-		
-		// Go forwards to white line, pause, then reverse forever		
-		while(read_analog_channel(0) < 120 && read_analog_channel(1) < 120)
-		{
-			set_motor_directions(1, 1); // motors forwards
-		}
-		set_motor_directions(0, 0); // stop motors
+	{		
+		// Go forwards to white line		
+		set_motor_directions(1, 1); // motors forwards
+		while(read_analog_channel(0) < 120 && read_analog_channel(1) < 120);
 
 		// pause
-		delay_ms(2000);
+		set_motor_directions(0, 0); // stop motors
+		delay_ms(500);
 		
-		// reverse full speed
-		set_motor_speeds(255, 255); // max speed is 255
-		set_motor_directions(-1, -1); // reverse
-		
-		// program gets trapped in this loop forever
-		while(1)
-		{
-		}
+		// Go backwards to white line
+		set_motor_directions(-1, -1); // motors forwards
+		while(read_analog_channel(2) < 120 && read_analog_channel(3) < 120);
+
+		// pause
+		set_motor_directions(0, 0); // stop motors
+		delay_ms(500);
 	}
 	
 	return 0;

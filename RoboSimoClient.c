@@ -27,6 +27,7 @@ unsigned char CCPR2L = 255; // PWM channel 2 duty cycle register
 // Analog input function
 unsigned int read_analog_channel(unsigned int channel)
 {
+	delay_ms(1);
 	return analog_inputs[channel];
 }
 
@@ -66,6 +67,7 @@ void set_motor_directions(int left, int right)
 		LATDbits.LATD2 = 0;
 		LATDbits.LATD3 = 0;
 	}
+	delay_ms(1);
 }
 
 void set_motor_speeds(int left, int right)
@@ -76,6 +78,7 @@ void set_motor_speeds(int left, int right)
 	if (right < 0) right = 0;
 	CCPR1L = left;
 	CCPR2L = right;
+	delay_ms(1);
 }
 
 // Delay function
@@ -198,7 +201,7 @@ DWORD WINAPI network_thread_function(LPVOID lpParam)
 		analog_inputs[7] = recvbuf[11];
 		
 		// Short pause
-		Sleep(20);
+		Sleep(1);
 	}
 	
 	// Exit thread
